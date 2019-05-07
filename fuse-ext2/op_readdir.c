@@ -69,7 +69,11 @@ static int walk_dir2 (ext2_ino_t dir, int   entry, struct ext2_dir_entry *dirent
 	st.st_ino = dirent->inode;
 	st.st_mode = type << 12;
 	debugf("%s %d %d %d", dirent->name, dirent->name_len & 0xff, dirent->name_len >> 8, type);
+#if FUSE_USE_VERSION < 30
 	res = psid->filler(psid->buf, dirent->name, &st, 0);
+#else
+	res = psid->filler(psid->buf, dirent->name, &st, 0, 0);
+#endif
 	if (res != 0) {
 		return BLOCK_ABORT;
 	}
@@ -93,15 +97,23 @@ static int walk_dir (struct ext2_dir_entry *de, int offset, int blocksize, char 
 	}
 	snprintf(fname, flen + 1, "%s", de->name);
 	debugf("b->filler(b->buf, %s, NULL, 0);", fname);
+#if FUSE_USE_VERSION < 30
 	ret = b->filler(b->buf, fname, NULL, 0);
+#else
+	ret = b->filler(b->buf, fname, NULL, 0, 0);
+#endif
 	free(fname);
-	
+
 	debugf("leave");
 	return ret;
 }
 #endif
 
+#if FUSE_USE_VERSION < 30
 int op_readdir (const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+#else
+int op_readdir (const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi, enum fuse_readdir_flags flags)
+#endif
 {
 	int rt;
 	errcode_t rc;
@@ -114,7 +126,7 @@ int op_readdir (const char *path, void *buf, fuse_fill_dir_t filler, off_t offse
 
 	debugf("enter");
 	debugf("path = %s", path);
-	
+
 	rt = do_readinode(e2fs, path, &ino, &inode);
 	if (rt) {
 		debugf("do_readinode(%s, &ino, &inode); failed", path);

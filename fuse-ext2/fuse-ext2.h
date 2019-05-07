@@ -34,8 +34,14 @@
 #    include <sys/sysmacros.h>
 #endif
 
+#if defined USE_FUSE2 || FUSE_USE_VERSION && FUSE_USE_VERSION < 30
+#undef FUSE_USE_VERSION
+#define FUSE_USE_VERSION FUSE_VERSION
 #include <fuse.h>
-#include <sys/sysmacros.h>
+#else
+#include <fuse3/fuse.h>
+#endif
+
 #include <ext2fs/ext2fs.h>
 
 #if !defined(FUSE_VERSION) || (FUSE_VERSION < 26)
@@ -147,7 +153,11 @@ static inline void debug_main_printf (const char *function, char *file, int line
 
 #endif /* ENABLE_DEBUG */
 
+#if FUSE_USE_VERSION < 30
 void * op_init (struct fuse_conn_info *conn);
+#else
+void * op_init (struct fuse_conn_info *conn, struct fuse_config *cfg);
+#endif
 
 void op_destroy (void *userdata);
 
@@ -175,9 +185,12 @@ int do_killfilebyinode (ext2_filsys e2fs, ext2_ino_t ino, struct ext2_inode *ino
 
 int op_access (const char *path, int mask);
 
-int op_fgetattr (const char *path, struct stat *stbuf, struct fuse_file_info *fi);
-
+#if FUSE_USE_VERSION < 30
 int op_getattr (const char *path, struct stat *stbuf);
+int op_fgetattr (const char *path, struct stat *stbuf, struct fuse_file_info *fi);
+#else
+int op_getattr (const char *path, struct stat *stbuf, struct fuse_file_info *fi);
+#endif
 
 int op_getxattr(const char *path, const char *name, char *value, size_t size);
 
@@ -187,7 +200,11 @@ int op_open (const char *path, struct fuse_file_info *fi);
 
 int op_read (const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi);
 
+#if FUSE_USE_VERSION < 30
 int op_readdir (const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi);
+#else
+int op_readdir (const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi, enum fuse_readdir_flags flags);
+#endif
 
 int op_readlink (const char *path, char *buf, size_t size);
 
@@ -201,9 +218,17 @@ int op_statfs(const char *path, struct statvfs *buf);
 
 int do_modetoext2lag (mode_t mode);
 
+#if FUSE_USE_VERSION < 30
 int op_chmod (const char *path, mode_t mode);
+#else
+int op_chmod (const char *path, mode_t mode, struct fuse_file_info *fi);
+#endif
 
+#if FUSE_USE_VERSION < 30
 int op_chown (const char *path, uid_t uid, gid_t gid);
+#else
+int op_chown (const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi);
+#endif
 
 int do_create (ext2_filsys e2fs, const char *path, mode_t mode, dev_t dev, const char *fastsymlink);
 
@@ -221,7 +246,11 @@ int op_rmdir (const char *path);
 
 int op_unlink (const char *path);
 
+#if FUSE_USE_VERSION < 30
 int op_utimens (const char *path, const struct timespec tv[2]);
+#else
+int op_utimens (const char *path, const struct timespec tv[2], struct fuse_file_info *fi);
+#endif
 
 size_t do_write (ext2_file_t efile, const char *buf, size_t size, off_t offset);
 
@@ -231,12 +260,19 @@ int op_mknod (const char *path, mode_t mode, dev_t dev);
 
 int op_symlink (const char *sourcename, const char *destname);
 
+#if FUSE_USE_VERSION < 30
 int op_truncate(const char *path, off_t length);
-
 int op_ftruncate(const char *path, off_t length, struct fuse_file_info *fi);
+#else
+int op_truncate(const char *path, off_t length, struct fuse_file_info *fi);
+#endif
 
 int op_link (const char *source, const char *dest);
 
+#if FUSE_USE_VERSION < 30
 int op_rename (const char *source, const char *dest);
+#else
+int op_rename (const char *source, const char *dest, unsigned int flags);
+#endif
 
 #endif /* FUSEEXT2_H_ */

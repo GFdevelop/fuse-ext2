@@ -309,8 +309,10 @@ static const struct fuse_operations ext2fs_ops = {
 	.destroy	= op_destroy,
 	.access         = op_access,
 	.create         = op_create,
+#if FUSE_USE_VERSION < 30
 	.ftruncate      = op_ftruncate,
 	.fgetattr       = op_fgetattr,
+#endif
 	.lock           = NULL,
 	.utimens        = op_utimens,
 	.bmap           = NULL,

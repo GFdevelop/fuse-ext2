@@ -18,7 +18,8 @@ fuse_ext2_probe_SOURCES = \
 fuse_ext2_probe_CFLAGS = \
 	-Wall \
 	-DHAVE_CONFIG_H \
-	-I/usr/local/include
+	-I/usr/local/include \
+	-l$(LIBFUSE3)
 
 fuse_ext2_SOURCES =	\
 	fuse-ext2.h \
@@ -100,7 +101,9 @@ umfuseext2_la_CFLAGS = \
 	-D_GNU_SOURCE \
 	$(DEVELFLAGS) \
 	-I$(includedir)/umview \
-	-I/usr/local/include
+	-I/usr/local/include \
+	-DUSE_FUSE2 \
+	-l$(LIBFUSE)
 
 umfuseext2_la_LDFLAGS = \
 	-module \
@@ -111,7 +114,16 @@ umfuseext2_la_LDFLAGS = \
 fuse_ext2_CFLAGS = \
 	-Wall \
 	-DHAVE_CONFIG_H \
-	-I/usr/local/include
+	-I/usr/local/include \
+	-fPIC \
+	-l$(LIBFUSE3)
+
+fuse_ext2_LDFLAGS = \
+	-module \
+	-avoid-version \
+	-export-dynamic \
+	-Wall \
+	-rdynamic
 
 if DARWIN
 bin_PROGRAMS += \
@@ -161,5 +173,7 @@ install-data-hook:
 
 install-exec-local:
 	$(INSTALL) -d "$(DESTDIR)/$(sbindir)"
-	$(LN_S) -f "$(bindir)/fuse-ext2" "$(DESTDIR)/$(sbindir)/mount.fuse-ext2"
+	mkdir -p "$(DESTDIR)$(libdir)/fuse-ext2"
+	$(LN_S) -f "$(bindir)/fuse-ext2" "$(DESTDIR)$(libdir)/fuse-ext2/libfuseext2.so"
+	$(LN_S) -f "$(bindir)/fuse-ext2" "$(DESTDIR)$(sbindir)/mount.fuse-ext2"
 endif

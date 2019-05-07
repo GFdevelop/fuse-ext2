@@ -48,7 +48,7 @@ static int do_fix_dotdot (ext2_filsys e2fs, ext2_ino_t ino, ext2_ino_t dotdot)
 	errcode_t rc;
 
 	debugf("enter");
-	rc = ext2fs_dir_iterate2(e2fs, ino, DIRENT_FLAG_INCLUDE_EMPTY, 
+	rc = ext2fs_dir_iterate2(e2fs, ino, DIRENT_FLAG_INCLUDE_EMPTY,
 			0, fix_dotdot_proc, &dotdot);
 	if (rc) {
 		debugf("while iterating over directory");
@@ -57,8 +57,11 @@ static int do_fix_dotdot (ext2_filsys e2fs, ext2_ino_t ino, ext2_ino_t dotdot)
 	debugf("leave");
 	return 0;
 }
-
+#if FUSE_USE_VERSION < 30
 int op_rename (const char *source, const char *dest)
+#else
+int op_rename (const char *source, const char *dest, unsigned int flags)
+#endif
 {
 	int rt;
 	errcode_t rc;
@@ -175,7 +178,7 @@ int op_rename (const char *source, const char *dest)
 			goto out;
 		}
 	}
-  	
+
 	/* Step 2: add the link */
 	do {
 		debugf("calling ext2fs_link(e2fs, %d, %s, %d, %d);", d_dest_ino, r_dest, src_ino, do_modetoext2lag(src_inode.i_mode));

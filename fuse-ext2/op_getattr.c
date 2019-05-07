@@ -20,7 +20,11 @@
 
 #include "fuse-ext2.h"
 
+#if FUSE_USE_VERSION < 30
 int op_getattr (const char *path, struct stat *stbuf)
+#else
+int op_getattr (const char *path, struct stat *stbuf, struct fuse_file_info *fi)
+#endif
 {
 	int rt;
 	ext2_ino_t ino;

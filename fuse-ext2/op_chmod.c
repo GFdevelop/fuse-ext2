@@ -20,7 +20,11 @@
 
 #include "fuse-ext2.h"
 
+#if FUSE_USE_VERSION < 30
 int op_chmod (const char *path, mode_t mode)
+#else
+int op_chmod (const char *path, mode_t mode, struct fuse_file_info *fi)
+#endif
 {
 	int rt;
 	int mask;

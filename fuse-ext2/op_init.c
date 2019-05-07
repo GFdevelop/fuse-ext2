@@ -20,7 +20,11 @@
 
 #include "fuse-ext2.h"
 
+#if FUSE_USE_VERSION < 30
 void * op_init (struct fuse_conn_info *conn)
+#else
+void * op_init (struct fuse_conn_info *conn, struct fuse_config *cfg)
+#endif
 {
 	errcode_t rc;
 	struct fuse_context *cntx=fuse_get_context();
@@ -28,7 +32,7 @@ void * op_init (struct fuse_conn_info *conn)
 
 	debugf("enter %s", e2data->device);
 
-	rc = ext2fs_open(e2data->device, 
+	rc = ext2fs_open(e2data->device,
 			(e2data->readonly) ? 0 : EXT2_FLAG_RW,
 			0, 0, unix_io_manager, &e2data->e2fs);
 	if (rc) {

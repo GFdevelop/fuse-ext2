@@ -20,8 +20,14 @@
 
 #include "fuse-ext2.h"
 
+#if FUSE_USE_VERSION < 30
 int op_truncate (const char *path, off_t length)
 {
+#else
+int op_truncate (const char *path, off_t length, struct fuse_file_info *fi)
+{
+	(void) fi;
+#endif
 	int rt;
 	errcode_t rc;
 	ext2_ino_t ino;
@@ -77,8 +83,10 @@ int op_truncate (const char *path, off_t length)
 	return 0;
 }
 
+#if FUSE_USE_VERSION < 30
 int op_ftruncate (const char *path, off_t length, struct fuse_file_info *fi)
 {
 	(void) fi;
 	return op_truncate(path, length);
 }
+#endif

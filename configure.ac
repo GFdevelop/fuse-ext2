@@ -1,5 +1,5 @@
 
-AC_INIT([fuse-ext2], [0.0.9], [alper.akcan@gmail.com])
+AC_INIT([fuse-ext2], [0.0.10], [alper.akcan@gmail.com])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_HEADER([config.h])
@@ -125,7 +125,7 @@ AC_CHECK_FUNCS([	\
 	select			\
 	srand			\
 	srandom			\
-	strcasecmp      	\
+	strcasecmp      \
 	strchr			\
 	strdup			\
 	strerror		\
@@ -141,19 +141,25 @@ AC_CHECK_FUNCS([	\
 
 # Checks for libraries
 AC_SEARCH_LIBS([sem_post], [pthread], [], [AC_MSG_ERROR([Can't find pthreads, please install it])])
-AC_SEARCH_LIBS([fuse_main], [osxfuse fuse], [], [AC_MSG_ERROR([Can't find libfuse, please install it])])
 AC_SEARCH_LIBS([com_err], [com_err], [], [AC_MSG_ERROR([Can't find comerr, please install it])])
 AC_SEARCH_LIBS([ext2fs_open], [ext2fs], [], [AC_MSG_ERROR([Can't find e2fslibs, please install it])])
+AC_CHECK_LIB([osxfuse], [fuse_main], [
+		AC_SUBST(LIBFUSE, [osxfuse])
+		AC_SUBST(LIBFUSE3, [osxfuse])
+], [
+	AC_CHECK_LIB([fuse], [fuse_new], [AC_SUBST(LIBFUSE, [fuse])], [AC_MSG_ERROR([Can't find fuse, please install it])])
+	AC_CHECK_LIB([fuse3], [fuse_new_30], [AC_SUBST(LIBFUSE3, [fuse3])], [AC_MSG_ERROR([Can't find fuse3, please install it])])
+])
 
 AC_MSG_CHECKING([if FUSE on this system is too new for us])
 AC_EGREP_CPP([fuse_version_yes], [
 #define _FILE_OFFSET_BITS 64
-#define FUSE_USE_VERSION 27
-#include "fuse.h"
-#if FUSE_VERSION > 27
+#define FUSE_USE_VERSION FUSE_VERSION
+#include "fuse3/fuse.h"
+#if FUSE_VERSION > 32
 fuse_version_yes
 #endif
-], AC_DEFINE([FUSE_USE_VERSION], [27], [Version of FUSE interface]) AC_MSG_RESULT([yes]),
+], AC_DEFINE([FUSE_USE_VERSION], [32], [Version of FUSE interface]) AC_MSG_RESULT([yes]),
    AC_DEFINE([FUSE_USE_VERSION], [FUSE_VERSION], [Version of FUSE interface]) AC_MSG_RESULT([no]))
 
 # Check extra parameters

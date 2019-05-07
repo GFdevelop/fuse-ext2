@@ -20,7 +20,11 @@
 
 #include "fuse-ext2.h"
 
+#if FUSE_USE_VERSION < 30
 int op_utimens (const char *path, const struct timespec tv[2])
+#else
+int op_utimens (const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
+#endif
 {
 	int rt;
 	ext2_ino_t ino;
@@ -29,7 +33,7 @@ int op_utimens (const char *path, const struct timespec tv[2])
 
 	debugf("enter");
 	debugf("path = %s", path);
-	
+
 	rt = do_check(path);
 	if (rt != 0) {
 		debugf("do_check(%s); failed", path);
@@ -41,7 +45,7 @@ int op_utimens (const char *path, const struct timespec tv[2])
 		debugf("do_readinode(%s, &ino, &vnode); failed", path);
 		return rt;
 	}
-	
+
 	inode.i_atime = tv[0].tv_sec;
 	inode.i_mtime = tv[0].tv_sec;
 

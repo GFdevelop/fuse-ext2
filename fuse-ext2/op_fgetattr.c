@@ -20,6 +20,7 @@
 
 #include "fuse-ext2.h"
 
+#if FUSE_USE_VERSION < 30
 int op_fgetattr (const char *path, struct stat *stbuf, struct fuse_file_info *fi)
 {
 	int rt;
@@ -29,7 +30,7 @@ int op_fgetattr (const char *path, struct stat *stbuf, struct fuse_file_info *fi
 
 	debugf("enter");
 	debugf("path = %s", path);
-	
+
 	rt = do_check(path);
 	if (rt != 0) {
 		debugf("do_check(%s); failed", path);
@@ -47,3 +48,4 @@ int op_fgetattr (const char *path, struct stat *stbuf, struct fuse_file_info *fi
 	debugf("leave");
 	return 0;
 }
+#endif
